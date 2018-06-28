@@ -1,4 +1,4 @@
-package br.com.vvdalatab.service;
+package br.com.vvdatalab.service;
 
 public class IngestionUnifiedContext {
 
