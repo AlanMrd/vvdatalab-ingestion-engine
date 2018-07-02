@@ -1,5 +1,14 @@
 package br.com.vvdatalab.service;
 
-public class IngestionRaw {
+import org.apache.spark.sql.SparkSession;
+import br.com.vvdatalab.dto.HbaseConfig;
+
+public class IngestionRaw implements Ingestion {
+
+	@Override
+	public void executeIngestion(HbaseConfig hbaseFields,SparkSession sparkSession) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

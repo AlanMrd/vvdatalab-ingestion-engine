@@ -2,6 +2,7 @@ package br.com.vvdatalab.dataaccess;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Map.Entry;
@@ -12,9 +13,13 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.spark.api.java.function.ForeachPartitionFunction;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,23 +42,6 @@ public class HbaseImpl<T> implements Hbase<T> {
 		return connection;
 
 	}
-
-
-//	@Override
-//	public T getAllFieldHbase(String hbaseTable, String rowkey, Class<T> classConfig) {
-//		
-//		T newInstance = null;
-//		
-//		try {
-//			newInstance = classConfig.newInstance();
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		} catch (IllegalAccessException e) {
-//			e.printStackTrace();
-//		}
-//		return newInstance;
-//		
-//	}
 
 
 	@SuppressWarnings("unchecked")
@@ -93,6 +81,37 @@ public class HbaseImpl<T> implements Hbase<T> {
 		} 
 		
 		return clazz;
+	}
+
+
+	@Override
+	public void putAll(Dataset<Row> ds) {
+		ds.foreachPartition(new ForeachPartitionFunction<Row>() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void call(Iterator<Row> t) throws Exception {
+				Configuration config = HBaseConfiguration.create();
+				Connection connection = ConnectionFactory.createConnection(config);
+				Table table = connection.getTable(TableName.valueOf("ingestion:marca".getBytes()));
+				System.out.println("Conexao aberta com o HBASE! " + connection.hashCode());
+				
+				String[] columns = null;
+
+				while (t.hasNext()) {
+					Row row = t.next();
+					
+					Put put = new Put(Bytes.toBytes(row.getAs("rowkey").toString()));
+							
+					for(String column : columns){
+						put.addColumn("dados".getBytes(), column.getBytes(), Bytes.toBytes(row.getAs(column) == null ? "".toString() : row.getAs(column).toString()));
+					}
+				
+					table.put(put);
+				}	
+			}
+		});
+		
 	}
 }
 	
