@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class HbaseImpl implements Hbase, Serializable {
+public class HBaseDAOImpl implements HBaseDAO, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

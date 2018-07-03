@@ -1,20 +1,20 @@
 package br.com.vvdatalab.di;
 
-import br.com.vvdatalab.service.Ingestion;
-import br.com.vvdatalab.service.IngestionHbase;
-import br.com.vvdatalab.service.IngestionRaw;
+import br.com.vvdatalab.service.IngestionHBaseService;
+import br.com.vvdatalab.service.IngestionRawService;
+import br.com.vvdatalab.service.IngestionService;
 
 public class IngestionFactory {
 		
-	public Ingestion getIngestion(String ingestion) {
+	public static IngestionService getIngestion(String ingestion) {
 		if(ingestion == null) {
 			return null;
 		}
 		else if(ingestion.equalsIgnoreCase("HBASE")){	
-			return new IngestionHbase();
+			return new IngestionHBaseService();
 		}
 		else if(ingestion.equalsIgnoreCase("SQL")){
-			return new IngestionRaw();
+			return new IngestionRawService();
 		}
 		else{
 			return null;
