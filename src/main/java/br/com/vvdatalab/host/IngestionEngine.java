@@ -4,9 +4,9 @@ import org.apache.spark.sql.SparkSession;
 
 import br.com.vvdatalab.dataaccess.Hbase;
 import br.com.vvdatalab.dataaccess.HbaseImpl;
+import br.com.vvdatalab.di.IngestionFactory;
 import br.com.vvdatalab.dto.HbaseConfig;
 import br.com.vvdatalab.service.Ingestion;
-import br.com.vvdatalab.di.IngestionFactory;
 
 public class IngestionEngine {
 
@@ -21,13 +21,13 @@ public class IngestionEngine {
 				.config("spark.shuffle.service.enabled", true).config("hive.exec.dynamic.partition", "true")
 				.config("hive.exec.dynamic.partition.mode", "nonstrict").enableHiveSupport().getOrCreate();
 		
-		Hbase<HbaseConfig> hbase = new HbaseImpl<>();
+		Hbase hbase = new HbaseImpl();
 		HbaseConfig hbaseFields = hbase.getAllFieldHbase("ingestion:properties", table, HbaseConfig.class);
 		
 		IngestionFactory factoryIngestion = new IngestionFactory();
-
+	
 		Ingestion ingestion = factoryIngestion.getIngestion(hbaseFields.getSource());
-		ingestion.executeIngestion(hbaseFields, ss);
+		ingestion.executeIngestion(hbaseFields, ss, hbase);
 	}
 
 }

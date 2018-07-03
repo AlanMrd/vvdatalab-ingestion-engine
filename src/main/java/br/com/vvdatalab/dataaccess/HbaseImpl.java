@@ -1,6 +1,7 @@
 package br.com.vvdatalab.dataaccess;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +26,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class HbaseImpl<T> implements Hbase<T> {
+public class HbaseImpl implements Hbase, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	public Connection getConnection() {
@@ -43,10 +46,37 @@ public class HbaseImpl<T> implements Hbase<T> {
 
 	}
 
-
-	@SuppressWarnings("unchecked")
 	@Override
-	public T getAllFieldHbase(String hbaseTable, String rowkey, Class<T> classConfig) throws InstantiationException, IllegalAccessException {
+	public void putAll(Dataset<Row> ds, String[] columns) {
+		ds.foreachPartition(new ForeachPartitionFunction<Row>() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void call(Iterator<Row> t) throws Exception {
+				Configuration config = HBaseConfiguration.create();
+				Connection connection = ConnectionFactory.createConnection(config);
+				Table table = connection.getTable(TableName.valueOf("ingestion:marca".getBytes()));
+				System.out.println("Conexao aberta com o HBASE! " + connection.hashCode());
+		
+				while (t.hasNext()) {
+					Row row = t.next();
+					
+					Put put = new Put(Bytes.toBytes(row.getAs("rowkey").toString()));
+							
+					for(String column : columns){
+						put.addColumn("dados".getBytes(), column.getBytes(), Bytes.toBytes(row.getAs(column) == null ? "".toString() : row.getAs(column).toString()));
+					}
+				
+					table.put(put);
+				}	
+			}
+		});
+		
+	}
+
+	@Override
+	public <T> T getAllFieldHbase(String hbaseTable, String rowkey, Class<T> classConfig)
+			throws InstantiationException, IllegalAccessException {
 		Table table;		
 		T clazz = classConfig.newInstance();
 
@@ -81,37 +111,6 @@ public class HbaseImpl<T> implements Hbase<T> {
 		} 
 		
 		return clazz;
-	}
-
-
-	@Override
-	public void putAll(Dataset<Row> ds) {
-		ds.foreachPartition(new ForeachPartitionFunction<Row>() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void call(Iterator<Row> t) throws Exception {
-				Configuration config = HBaseConfiguration.create();
-				Connection connection = ConnectionFactory.createConnection(config);
-				Table table = connection.getTable(TableName.valueOf("ingestion:marca".getBytes()));
-				System.out.println("Conexao aberta com o HBASE! " + connection.hashCode());
-				
-				String[] columns = null;
-
-				while (t.hasNext()) {
-					Row row = t.next();
-					
-					Put put = new Put(Bytes.toBytes(row.getAs("rowkey").toString()));
-							
-					for(String column : columns){
-						put.addColumn("dados".getBytes(), column.getBytes(), Bytes.toBytes(row.getAs(column) == null ? "".toString() : row.getAs(column).toString()));
-					}
-				
-					table.put(put);
-				}	
-			}
-		});
-		
 	}
 }
 	
