@@ -2,11 +2,14 @@ package br.com.vvdatalab.host;
 
 import org.apache.spark.sql.SparkSession;
 
-import br.com.vvdatalab.dataaccess.Hbase;
-import br.com.vvdatalab.dataaccess.HbaseImpl;
+import br.com.vvdatalab.dataaccess.HBaseDAO;
+import br.com.vvdatalab.dataaccess.HBaseDAOImpl;
 import br.com.vvdatalab.di.IngestionFactory;
+import br.com.vvdatalab.di.SparkSessionFactory;
+import br.com.vvdatalab.dto.HBaseIngestionParam;
 import br.com.vvdatalab.dto.HbaseConfig;
-import br.com.vvdatalab.service.Ingestion;
+import br.com.vvdatalab.dto.IngestionParams;
+import br.com.vvdatalab.service.IngestionService;
 
 public class IngestionEngine {
 
@@ -17,17 +20,14 @@ public class IngestionEngine {
 			throw new RuntimeException("Please, check table name");
 		}
 
-		SparkSession ss = SparkSession.builder().appName("data_import").config("spark.dynamicAllocation.enabled", true)
-				.config("spark.shuffle.service.enabled", true).config("hive.exec.dynamic.partition", "true")
-				.config("hive.exec.dynamic.partition.mode", "nonstrict").enableHiveSupport().getOrCreate();
+		SparkSession sparkSession = SparkSessionFactory.getSparkSession();
 		
-		Hbase hbase = new HbaseImpl();
-		HbaseConfig hbaseFields = hbase.getAllFieldHbase("ingestion:properties", table, HbaseConfig.class);
+		HBaseDAO hbaseDAO = new HBaseDAOImpl();
+		HbaseConfig hbaseFields = hbaseDAO.getAllFieldHbase("ingestion:properties", table, HbaseConfig.class);
 		
-		IngestionFactory factoryIngestion = new IngestionFactory();
-	
-		Ingestion ingestion = factoryIngestion.getIngestion(hbaseFields.getSource());
-		ingestion.executeIngestion(hbaseFields, ss, hbase);
+		IngestionParams params = new HBaseIngestionParam(hbaseFields, sparkSession, hbaseDAO);
+		
+		IngestionService ingestionService = IngestionFactory.getIngestion(hbaseFields.getSource());
+		ingestionService.executeIngestion(params);
 	}
-
 }
