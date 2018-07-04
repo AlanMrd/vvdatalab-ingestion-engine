@@ -1,11 +1,9 @@
 package br.com.vvdatalab.service;
 
-import br.com.vvdatalab.dto.IngestionParams;
-
 public class IngestionRawService implements IngestionService {
 
 	@Override
-	public void executeIngestion(IngestionParams params) {
+	public void executeIngestion() {
 		// TODO Auto-generated method stub
 		
 	}
