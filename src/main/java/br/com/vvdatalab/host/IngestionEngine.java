@@ -6,6 +6,7 @@ import br.com.vvdatalab.dataaccess.HBaseDAO;
 import br.com.vvdatalab.dataaccess.HBaseDAOImpl;
 import br.com.vvdatalab.di.IngestionFactory;
 import br.com.vvdatalab.dto.HbaseConfig;
+import br.com.vvdatalab.service.IngestionService;
 
 public class IngestionEngine {
 
@@ -23,8 +24,10 @@ public class IngestionEngine {
 		
 		HBaseDAO hbaseDAO = new HBaseDAOImpl();
 		HbaseConfig hbaseFields = hbaseDAO.getAllFieldHbase("ingestion:properties", table, HbaseConfig.class);
+		System.out.println(hbaseFields);
 	
 		IngestionFactory ingestionFactory = new IngestionFactory(hbaseDAO, hbaseFields, sparkSession); 
-		ingestionFactory.getIngestion();
+		IngestionService ingestion = ingestionFactory.getIngestion();
+		ingestion.executeIngestion();
 	}
 }

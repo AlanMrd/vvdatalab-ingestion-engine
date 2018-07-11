@@ -2,6 +2,8 @@ package br.com.vvdatalab.service;
 
 import static org.apache.spark.sql.functions.concat_ws;
 
+import java.util.Properties;
+
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -23,9 +25,22 @@ public class IngestionHBaseService implements IngestionService {
 
 	@Override
 	public void executeIngestion() {		
-		Dataset<Row> sql = sparkSession.sql(hbaseConfig.getQuery());
-		Dataset<Row> dsHbase = sql.withColumn("rowkey", concat_ws("-", IngestionUtils.getColumnKey(hbaseConfig.getKey())));
+		Dataset<Row> dsSqlServer = getSqlServerData();
 		
-		hbaseDAO.putAll(dsHbase, sql.columns());
+		Dataset<Row> dsHbase = dsSqlServer.withColumn("rowkey", concat_ws("-", IngestionUtils.getColumnKey(hbaseConfig.getKey())));
+		
+		hbaseDAO.putAll(dsHbase, dsHbase.columns(), hbaseConfig);
+	}
+	
+	public Dataset<Row> getSqlServerData(){
+		String jdbcSqlConnStr = String.format("jdbc:sqlserver://%s;database=%s;user=%s;password=%s",hbaseConfig.getServer(),hbaseConfig.getDatabase(),hbaseConfig.getUser(),hbaseConfig.getPassword());
+		
+		Properties properties = new Properties();
+		properties.setProperty("driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+		properties.setProperty("ApplicationIntent", "ReadOnly");
+		String tableQuery = String.format("(%s) as tb",hbaseConfig.getQuery());
+		
+		Dataset<Row> ds = sparkSession.read().jdbc(jdbcSqlConnStr, tableQuery , properties);
+		return ds;
 	}
 }

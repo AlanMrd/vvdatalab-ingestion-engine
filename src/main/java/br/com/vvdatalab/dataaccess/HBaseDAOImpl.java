@@ -25,6 +25,8 @@ import org.apache.spark.sql.Row;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import br.com.vvdatalab.dto.HbaseConfig;
+
 
 public class HBaseDAOImpl implements HBaseDAO, Serializable {
 
@@ -47,7 +49,8 @@ public class HBaseDAOImpl implements HBaseDAO, Serializable {
 	}
 
 	@Override
-	public void putAll(Dataset<Row> ds, String[] columns) {
+	public void putAll(Dataset<Row> ds, String[] columns, HbaseConfig hbaseConfig) {
+		
 		ds.foreachPartition(new ForeachPartitionFunction<Row>() {
 			private static final long serialVersionUID = 1L;
 
@@ -55,16 +58,16 @@ public class HBaseDAOImpl implements HBaseDAO, Serializable {
 			public void call(Iterator<Row> t) throws Exception {
 				Configuration config = HBaseConfiguration.create();
 				Connection connection = ConnectionFactory.createConnection(config);
-				Table table = connection.getTable(TableName.valueOf("ingestion:marca".getBytes()));
+				Table table = connection.getTable(TableName.valueOf(hbaseConfig.getTable().getBytes()));
 				System.out.println("Conexao aberta com o HBASE! " + connection.hashCode());
-		
+				
 				while (t.hasNext()) {
 					Row row = t.next();
 					
 					Put put = new Put(Bytes.toBytes(row.getAs("rowkey").toString()));
 							
 					for(String column : columns){
-						put.addColumn("dados".getBytes(), column.getBytes(), Bytes.toBytes(row.getAs(column) == null ? "".toString() : row.getAs(column).toString()));
+						put.addColumn(hbaseConfig.getColumnFamily().getBytes(), column.getBytes(), Bytes.toBytes(row.getAs(column) == null ? "".toString() : row.getAs(column).toString()));
 					}
 				
 					table.put(put);

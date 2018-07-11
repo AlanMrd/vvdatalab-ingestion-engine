@@ -28,6 +28,7 @@ private static final long serialVersionUID = 5642655208923252660L;
 	private String key;
 	private String queryContext;
 	private String qtdTableUnion;
+	private String columnFamily;
 	
 	public String getDelimiter() {
 		return delimiter;
@@ -207,8 +208,6 @@ private static final long serialVersionUID = 5642655208923252660L;
 		return key;
 	}
 	
-
-
 	public void setKey(String key) {
 		this.key = key;
 	}
@@ -229,15 +228,22 @@ private static final long serialVersionUID = 5642655208923252660L;
 		this.qtdTableUnion = qtdTableUnion;
 	}
 
+	public String getColumnFamily() {
+		return columnFamily;
+	}
+
+	public void setColumnFamily(String columnFamily) {
+		this.columnFamily = columnFamily;
+	}
+
 	@Override
 	public String toString() {
-		return "ConfigVO [source=" + source + ", database=" + database + ", outPath=" + outPath + ", password="
+		return "HbaseConfig [source=" + source + ", database=" + database + ", outPath=" + outPath + ", password="
 				+ password + ", server=" + server + ", table=" + table + ", typeFile=" + typeFile + ", user=" + user
 				+ ", query=" + query + ", compression=" + compression + ", modeFile=" + modeFile + ", tableHive="
 				+ tableHive + ", dataBaseHive=" + dataBaseHive + ", delimiter=" + delimiter + ", header=" + header
 				+ ", quote=" + quote + ", quoteMode=" + quoteMode + ", key=" + key + ", queryContext=" + queryContext
-				+ ", partitionBy=" + partitionBy + ", inPath=" + inPath + ", file=" + file + ", qtdTableUnion=" + qtdTableUnion + "]";
+				+ ", qtdTableUnion=" + qtdTableUnion + ", columnFamily=" + columnFamily + ", partitionBy=" + partitionBy
+				+ ", inPath=" + inPath + ", file=" + file + "]";
 	}
-
-
 }
