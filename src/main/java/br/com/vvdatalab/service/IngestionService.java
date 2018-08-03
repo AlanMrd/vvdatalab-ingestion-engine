@@ -1,5 +1,7 @@
 package br.com.vvdatalab.service;
 
-public interface IngestionService {
-	public void executeIngestion();
+import java.io.Serializable;
+
+public interface IngestionService extends Serializable {
+	public void executeIngestion() throws InstantiationException, IllegalAccessException;
 }

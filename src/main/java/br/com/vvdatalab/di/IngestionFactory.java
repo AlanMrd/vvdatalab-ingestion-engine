@@ -27,8 +27,11 @@ public class IngestionFactory {
 			return null;
 		}
 		else if(ingestion.equalsIgnoreCase("HBASE")){
-			System.out.println("Executando comando para fazer ingestão no hbase");
 			return new IngestionHBaseService(hbaseDAO, hbaseConfig, sparkSession);
+		}
+		else if(ingestion.equalsIgnoreCase("HBASE2HBASE")){
+//			return new IngestionHbase2Hbase(hbaseDAO, hbaseConfig, sparkSession);
+			return null;
 		}
 		else if(ingestion.equalsIgnoreCase("SQL")){
 			return new IngestionRawService();
